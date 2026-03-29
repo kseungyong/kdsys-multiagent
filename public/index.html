@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KDSys MultiAgent Lab</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --border: #2e2e42;
+    --text: #e2e2f0;
+    --text-muted: #888899;
+    --accent: #6366f1;
+    --user-bg: #1e3a5f;
+    --user-border: #2563eb;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--bg);
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 360px;
+    text-align: center;
+  }
+
+  .login-box h1 { font-size: 1.5rem; margin-bottom: 8px; }
+  .login-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 28px; }
+
+  .form-group { margin-bottom: 16px; text-align: left; }
+  .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: var(--accent); }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 10px; }
+
+  /* MAIN APP */
+  #app { display: none; flex-direction: column; height: 100vh; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .header-title { display: flex; align-items: center; gap: 10px; }
+  .header-title h1 { font-size: 1.1rem; font-weight: 700; }
+  .header-title .badge {
+    background: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .agents-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .agent-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.8rem;
+  }
+
+  .header-actions { display: flex; gap: 10px; }
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* CHAT LAYOUT */
+  .chat-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 14px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .new-session-btn {
+    background: var(--accent);
+    border: none;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+  }
+  .new-session-btn:hover { opacity: 0.8; }
+
+  #session-list { flex: 1; overflow-y: auto; padding: 4px 8px; }
+
+  .session-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .session-item:hover { background: var(--surface2); color: var(--text); }
+  .session-item.active { background: var(--accent); color: white; }
+  .session-item .del-btn {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0 2px;
+  }
+  .session-item:hover .del-btn { opacity: 0.6; }
+  .session-item .del-btn:hover { opacity: 1; }
+
+  /* CHAT AREA */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  #messages::-webkit-scrollbar { width: 6px; }
+  #messages::-webkit-scrollbar-track { background: transparent; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .message {
+    display: flex;
+    gap: 12px;
+    max-width: 800px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+  }
+
+  .message-body { max-width: calc(100% - 50px); }
+  .message-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .message.user .message-meta { flex-direction: row-reverse; }
+
+  .sender-name { font-weight: 600; font-size: 0.9rem; }
+  .message-time { font-size: 0.75rem; color: var(--text-muted); }
+
+  .message-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .message.user .message-content {
+    background: var(--user-bg);
+    border-color: var(--user-border);
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .typing-dots {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+  }
+
+  /* Streaming message */
+  .streaming .message-content::after {
+    content: '▋';
+    animation: blink 0.7s infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* INPUT */
+  .input-area {
+    padding: 16px 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .input-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .input-hint code {
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  #chat-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    resize: none;
+    outline: none;
+    max-height: 150px;
+    min-height: 44px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+  #chat-input:focus { border-color: var(--accent); }
+  #chat-input::placeholder { color: var(--text-muted); }
+
+  #send-btn {
+    padding: 12px 20px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+    height: 44px;
+    white-space: nowrap;
+  }
+  #send-btn:hover { opacity: 0.85; }
+  #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    text-align: center;
+    gap: 12px;
+  }
+  .empty-state .icon { font-size: 3rem; }
+  .empty-state h3 { font-size: 1.1rem; color: var(--text); }
+  .empty-state p { font-size: 0.85rem; max-width: 300px; }
+
+  /* Status indicator */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    flex-shrink: 0;
+  }
+  .status-dot.offline { background: #ef4444; }
+
+  /* Scrollbar */
+  #session-list::-webkit-scrollbar { width: 4px; }
+  #session-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Memory badge */
+  .memory-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .memory-badge.connected {
+    border-color: #22c55e55;
+    color: #22c55e;
+    background: #22c55e11;
+  }
+  .memory-badge.offline {
+    border-color: #ef444455;
+    color: #ef4444;
+    background: #ef444411;
+  }
+
+  /* Memory panel */
+  #memory-panel {
+    display: none;
+    position: fixed;
+    top: 60px;
+    right: 16px;
+    width: 360px;
+    max-height: 70vh;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #memory-panel.open { display: flex; }
+  .memory-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .memory-panel-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .memory-panel-close:hover { color: var(--text); background: var(--surface2); }
+  #memory-list { overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .memory-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .memory-item .mem-meta {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .memory-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 24px;
+    font-size: 0.85rem;
+  }
+  #memory-list::-webkit-scrollbar { width: 4px; }
+  #memory-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Brain icon on messages */
+  .memory-icon {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    margin-left: 4px;
+    cursor: default;
+    title: '메모리에 저장됨';
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:12px">🦞</div>
+    <h1>KDSys MultiAgent Lab</h1>
+    <p>AI 에이전트 회의실에 오신 걸 환영합니다</p>
+    <div class="form-group">
+      <label>아이디</label>
+      <input type="text" id="login-username" value="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>비밀번호</label>
+      <input type="password" id="login-password" placeholder="비밀번호 입력" autocomplete="current-password">
+    </div>
+    <button class="btn" id="login-btn" onclick="login()">로그인</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="header-title">
+      <span>🦞</span>
+      <h1>KDSys MultiAgent Lab</h1>
+      <span class="badge">BETA</span>
+    </div>
+    <div class="agents-bar" id="agents-bar"></div>
+    <div class="header-actions">
+      <div class="memory-badge" id="memory-badge" title="Memory API 상태">🧠 Memory: 확인 중...</div>
+      <button class="icon-btn" onclick="toggleMemoryPanel()">🧠 메모리 보기</button>
+      <div class="status-dot" id="status-dot"></div>
+      <button class="icon-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- Memory Panel -->
+  <div id="memory-panel">
+    <div class="memory-panel-header">
+      <span>🧠 공유 메모리</span>
+      <button class="memory-panel-close" onclick="toggleMemoryPanel()">✕</button>
+    </div>
+    <div id="memory-list"><div class="memory-empty">로딩 중...</div></div>
+  </div>
+
+  <div class="chat-layout">
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <span>대화 목록</span>
+        <button class="new-session-btn" onclick="newSession()" title="새 대화">+</button>
+      </div>
+      <div id="session-list"></div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area">
+      <div id="messages">
+        <div class="empty-state" id="empty-state">
+          <div class="icon">💬</div>
+          <h3>대화를 시작해보세요</h3>
+          <p>주제를 던지면 이지두, 김주희 과장, 민이가 함께 토론합니다</p>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-hint">
+          전체 대화: 그냥 입력 &nbsp;|&nbsp; 개별 호출: <code>@이지두</code> <code>@김주희</code> <code>@민이</code>
+        </div>
+        <div class="input-row">
+          <textarea id="chat-input" placeholder="주제를 던져보세요..." rows="1"></textarea>
+          <button id="send-btn" onclick="sendMessage()">전송 ↑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let token = localStorage.getItem('token');
+let ws = null;
+let currentSession = null;
+let sessions = [];
+let agents = [];
+let isProcessing = false;
+let streamingMessages = {};
+let memoryPanelOpen = false;
+
+async function login() {
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+
+  btn.disabled = true;
+  btn.textContent = '로그인 중...';
+  errEl.textContent = '';
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '로그인 실패');
+    
+    token = data.token;
+    localStorage.setItem('token', token);
+    await initApp();
+  } catch (e) {
+    errEl.textContent = e.message;
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  if (ws) ws.close();
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  // Load agents
+  const agentsRes = await fetch('/api/agents');
+  agents = await agentsRes.json();
+  renderAgentsBar();
+
+  // Check memory health
+  checkMemoryHealth();
+  setInterval(checkMemoryHealth, 30000);
+
+  // Load sessions
+  await loadSessions();
+
+  // Connect WebSocket
+  connectWS();
+
+  // Start first or new session
+  if (sessions.length > 0) {
+    joinSession(sessions[0].id);
+  } else {
+    await newSession();
+  }
+}
+
+function renderAgentsBar() {
+  const bar = document.getElementById('agents-bar');
+  bar.innerHTML = agents.map(a => `
+    <div class="agent-chip">
+      <span>${a.emoji}</span>
+      <span>${a.name}</span>
+    </div>
+  `).join('');
+}
+
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}`);
+
+  ws.onopen = () => {
+    document.getElementById('status-dot').classList.remove('offline');
+    ws.send(JSON.stringify({ type: 'auth', token }));
+  };
+
+  ws.onclose = () => {
+    document.getElementById('status-dot').classList.add('offline');
+    setTimeout(connectWS, 3000);
+  };
+
+  ws.onerror = () => {
+    document.getElementById('status-dot').classList.add('offline');
+  };
+
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    handleWsMessage(msg);
+  };
+}
+
+function handleWsMessage(msg) {
+  switch (msg.type) {
+    case 'auth_ok':
+      if (currentSession) ws.send(JSON.stringify({ type: 'join', sessionId: currentSession }));
+      break;
+
+    case 'session_joined':
+      currentSession = msg.sessionId;
+      renderHistory(msg.history);
+      break;
+
+    case 'message':
+      hideEmptyState();
+      if (msg.role === 'user') {
+        appendMessage({ role: 'user', name: msg.name, content: msg.content, timestamp: msg.timestamp });
+      }
+      break;
+
+    case 'typing':
+      showTyping(msg.agentId, msg.name, msg.emoji);
+      break;
+
+    case 'token':
+      hideTyping(msg.agentId);
+      appendToken(msg.agentId, msg.name, msg.emoji, msg.color, msg.token);
+      break;
+
+    case 'message_complete':
+      finalizeStream(msg.agentId, msg.content, msg.timestamp);
+      break;
+
+    case 'turn_complete':
+      isProcessing = false;
+      streamKeyMap = {};
+      document.getElementById('send-btn').disabled = false;
+      document.getElementById('chat-input').disabled = false;
+      scrollToBottom();
+      break;
+
+    case 'agent_error':
+      hideTyping(msg.agentId);
+      removeStream(msg.agentId);
+      appendMessage({
+        role: 'assistant',
+        agentId: msg.agentId,
+        name: msg.name,
+        emoji: '⚠️',
+        color: '#ef4444',
+        content: `오류가 발생했습니다: ${msg.error}`,
+        timestamp: Date.now()
+      });
+      break;
+  }
+}
+
+function renderHistory(history) {
+  const container = document.getElementById('messages');
+  container.innerHTML = '';
+
+  if (!history || history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" id="empty-state">
+        <div class="icon">💬</div>
+        <h3>대화를 시작해보세요</h3>
+        <p>주제를 던지면 이지두, 김주희 과장, 민이가 함께 토론합니다</p>
+      </div>`;
+    return;
+  }
+
+  for (const msg of history) {
+    const agent = agents.find(a => a.id === msg.agent_id);
+    appendMessage({
+      role: msg.role,
+      agentId: msg.agent_id,
+      name: msg.name,
+      emoji: agent?.emoji || '👤',
+      color: agent?.color,
+      content: msg.content,
+      timestamp: msg.created_at
+    });
+  }
+}
+
+function hideEmptyState() {
+  const es = document.getElementById('empty-state');
+  if (es) es.remove();
+}
+
+function appendMessage({ role, agentId, name, emoji, color, content, timestamp }) {
+  hideEmptyState();
+  const container = document.getElementById('messages');
+  const isUser = role === 'user';
+
+  const time = new Date(timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  const nameColor = color ? `color: ${color}` : '';
+  const avatarBorder = color ? `border-color: ${color}` : '';
+
+  const el = document.createElement('div');
+  el.className = `message ${isUser ? 'user' : 'agent'}`;
+  el.dataset.agentId = agentId || '';
+  el.innerHTML = `
+    <div class="avatar" style="${avatarBorder}">${isUser ? '👤' : emoji}</div>
+    <div class="message-body">
+      <div class="message-meta">
+        <span class="sender-name" style="${nameColor}">${name}</span>
+        <span class="message-time">${time}</span>
+      </div>
+      <div class="message-content">${escapeHtml(content)}</div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollToBottom();
+  return el;
+}
+
+function showTyping(agentId, name, emoji) {
+  const container = document.getElementById('messages');
+  let indicator = document.getElementById(`typing-${agentId}`);
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = `typing-${agentId}`;
+    indicator.className = 'typing-indicator';
+    indicator.innerHTML = `
+      <div class="avatar">${emoji}</div>
+      <div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:6px">${name} 입력 중...</div>
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+      </div>
+    `;
+    container.appendChild(indicator);
+    scrollToBottom();
+  }
+}
+
+function hideTyping(agentId) {
+  const el = document.getElementById(`typing-${agentId}`);
+  if (el) el.remove();
+}
+
+// streamKey = agentId + timestamp so each response gets a fresh bubble
+let streamKeyMap = {}; // agentId -> current streamKey
+
+function appendToken(agentId, name, emoji, color, token) {
+  hideEmptyState();
+  const streamKey = streamKeyMap[agentId];
+  let msgEl = streamKey ? streamingMessages[streamKey] : null;
+
+  if (!msgEl) {
+    const newKey = agentId + '_' + Date.now();
+    streamKeyMap[agentId] = newKey;
+    const container = document.getElementById('messages');
+    const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    const nameColor = color ? `color: ${color}` : '';
+    const avatarBorder = color ? `border-color: ${color}` : '';
+
+    msgEl = document.createElement('div');
+    msgEl.className = 'message agent streaming';
+    msgEl.dataset.agentId = agentId;
+    msgEl.innerHTML = `
+      <div class="avatar" style="${avatarBorder}">${emoji}</div>
+      <div class="message-body">
+        <div class="message-meta">
+          <span class="sender-name" style="${nameColor}">${name}</span>
+          <span class="message-time">${time}</span>
+        </div>
+        <div class="message-content" id="stream-${newKey}"></div>
+      </div>
+    `;
+    container.appendChild(msgEl);
+    streamingMessages[newKey] = msgEl;
+    // scroll to new bubble
+    msgEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  const currentKey = streamKeyMap[agentId];
+  const contentEl = document.getElementById(`stream-${currentKey}`);
+  if (contentEl) {
+    contentEl.textContent += token;
+    scrollToBottom();
+  }
+}
+
+function finalizeStream(agentId, fullContent, timestamp) {
+  const streamKey = streamKeyMap[agentId];
+  if (!streamKey) return;
+  const msgEl = streamingMessages[streamKey];
+  if (msgEl) {
+    msgEl.classList.remove('streaming');
+    const contentEl = document.getElementById(`stream-${streamKey}`);
+    if (contentEl) contentEl.textContent = fullContent;
+    // 메모리 저장 아이콘 추가
+    const meta = msgEl.querySelector('.message-meta');
+    if (meta && !meta.querySelector('.memory-icon')) {
+      const icon = document.createElement('span');
+      icon.className = 'memory-icon';
+      icon.title = '메모리에 저장됨';
+      icon.textContent = '🧠';
+      meta.appendChild(icon);
+    }
+    delete streamingMessages[streamKey];
+  }
+  delete streamKeyMap[agentId];
+}
+
+function removeStream(agentId) {
+  const streamKey = streamKeyMap[agentId];
+  if (!streamKey) return;
+  const msgEl = streamingMessages[streamKey];
+  if (msgEl) {
+    msgEl.remove();
+    delete streamingMessages[streamKey];
+  }
+  delete streamKeyMap[agentId];
+}
+
+async function loadSessions() {
+  const res = await fetch('/api/sessions', { headers: { Authorization: `Bearer ${token}` } });
+  sessions = await res.json();
+  renderSessionList();
+}
+
+function renderSessionList() {
+  const list = document.getElementById('session-list');
+  if (sessions.length === 0) {
+    list.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--text-muted);text-align:center">대화 없음</div>';
+    return;
+  }
+  list.innerHTML = sessions.map((s, i) => {
+    const date = s.last_activity
+      ? new Date(s.last_activity).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+      : '새 대화';
+    return `
+      <div class="session-item ${s.id === currentSession ? 'active' : ''}" onclick="joinSession('${s.id}')">
+        <span>💬 대화 ${i + 1}</span>
+        <button class="del-btn" onclick="event.stopPropagation();deleteSession('${s.id}')" title="삭제">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function joinSession(sessionId) {
+  currentSession = sessionId;
+  renderSessionList();
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'join', sessionId }));
+  }
+}
+
+async function newSession() {
+  const res = await fetch('/api/sessions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  sessions.unshift({ id: data.id, created_at: Date.now(), message_count: 0 });
+  renderSessionList();
+  joinSession(data.id);
+}
+
+async function deleteSession(sessionId) {
+  if (!confirm('이 대화를 삭제하시겠어요?')) return;
+  await fetch(`/api/sessions/${sessionId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  sessions = sessions.filter(s => s.id !== sessionId);
+  if (currentSession === sessionId) {
+    if (sessions.length > 0) joinSession(sessions[0].id);
+    else await newSession();
+  }
+  renderSessionList();
+}
+
+function sendMessage() {
+  if (isProcessing) return;
+  const input = document.getElementById('chat-input');
+  const content = input.value.trim();
+  if (!content) return;
+
+  isProcessing = true;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('chat-input').disabled = true;
+
+  ws.send(JSON.stringify({ type: 'chat', content }));
+  input.value = '';
+  input.style.height = 'auto';
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('messages');
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ─── Memory Functions ───────────────────────────────────────────────────────
+
+async function checkMemoryHealth() {
+  const badge = document.getElementById('memory-badge');
+  if (!badge) return;
+  try {
+    const res = await fetch('/api/memory/health');
+    if (res.ok) {
+      badge.textContent = '🧠 Memory: connected';
+      badge.className = 'memory-badge connected';
+    } else {
+      badge.textContent = '🧠 Memory: offline';
+      badge.className = 'memory-badge offline';
+    }
+  } catch (e) {
+    badge.textContent = '🧠 Memory: offline';
+    badge.className = 'memory-badge offline';
+  }
+}
+
+async function toggleMemoryPanel() {
+  const panel = document.getElementById('memory-panel');
+  memoryPanelOpen = !memoryPanelOpen;
+  if (memoryPanelOpen) {
+    panel.classList.add('open');
+    loadMemories();
+  } else {
+    panel.classList.remove('open');
+  }
+}
+
+async function loadMemories() {
+  const list = document.getElementById('memory-list');
+  list.innerHTML = '<div class="memory-empty">로딩 중...</div>';
+  try {
+    const res = await fetch('/api/memories?scope=shared&limit=10');
+    const data = await res.json();
+    const memories = data.data || [];
+    if (memories.length === 0) {
+      list.innerHTML = '<div class="memory-empty">저장된 메모리가 없습니다</div>';
+      return;
+    }
+    list.innerHTML = memories.map(m => {
+      const date = m.created_at
+        ? new Date(m.created_at).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '';
+      const tags = (m.tags || []).filter(t => t !== 'conversation').slice(0, 3).join(', ');
+      return `
+        <div class="memory-item">
+          <div>${escapeHtml(m.content || '')}</div>
+          <div class="mem-meta">
+            ${m.category || ''} ${tags ? '• ' + escapeHtml(tags) : ''} ${date ? '• ' + date : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="memory-empty">메모리 로드 실패</div>';
+  }
+}
+
+// ─── End Memory Functions ───────────────────────────────────────────────────
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 150) + 'px';
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+
+  const pwInput = document.getElementById('login-password');
+  if (pwInput) {
+    pwInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') login();
+    });
+  }
+
+  // Auto-login if token exists
+  if (token) initApp().catch(() => {
+    localStorage.removeItem('token');
+    token = null;
+  });
+});
+</script>
+</body>
+</html>

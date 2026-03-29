@@ -1,0 +1,20 @@
+{
+  "name": "kdsys-multiagent",
+  "version": "1.0.0",
+  "description": "KDSys MultiAgent Lab - Multi-AI chat room",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "openai": "^6.33.0",
+    "ws": "^8.16.0"
+  }
+}
