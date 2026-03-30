@@ -13,8 +13,10 @@
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.1.1",
     "node-fetch": "^3.3.2",
     "openai": "^6.33.0",
+    "pdf-parse-new": "^2.0.0",
     "ws": "^8.16.0"
   }
 }

@@ -138,11 +138,19 @@ async function callAgent(agentId, messages, onToken, { sessionId, userMessage } 
       throw new Error(`Unknown provider: ${enrichedAgent.provider}`);
   }
 
-  // 응답을 shared 메모리에 저장 (비동기, await 없이)
-  const tags = ['conversation'];
-  if (sessionId) tags.push(sessionId);
-  const content = `[${agent.name}] ${response.slice(0, 500)}`;
-  saveMemory(agentId, content, tags, 'conversation', 'shared').catch(() => {});
+  // 응답을 shared 메모리에 저장 (prefix 없이 순수 내용만)
+  try {
+    const cleanContent = response
+      .replace(/^\[[\w\s가-힣·]+\]\s*:?\s*/g, '') // 에이전트 이름 prefix 제거
+      .trim()
+      .slice(0, 400);
+    if (cleanContent.length > 20) {
+      saveMemory(agentId, cleanContent,
+        ['conversation', agentId, sessionId || 'default'].filter(Boolean),
+        'conversation', 'shared'
+      ).catch(() => {});
+    }
+  } catch (_) {}
 
   return response;
 }
@@ -181,16 +189,37 @@ async function callGoogle(agent, messages, onToken) {
   const userMessages = messages.filter(m => m.role !== 'system');
   
   // All but last message go to history
+  // Gemini 규칙: history는 반드시 user로 시작, user/model 교대로 와야 함
+  const rawHistory = [];
   for (let i = 0; i < userMessages.length - 1; i++) {
     const m = userMessages[i];
-    history.push({
+    rawHistory.push({
       role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }]
+      parts: [{ text: m.content || '...' }]
     });
   }
 
+  // 첫 메시지가 model이면 제거, user/model 교대 보장
+  let validHistory = rawHistory;
+  if (validHistory.length > 0 && validHistory[0].role === 'model') {
+    validHistory = validHistory.slice(1);
+  }
+  // 연속된 같은 역할 제거 (마지막 것 유지)
+  const deduped = [];
+  for (const msg of validHistory) {
+    if (deduped.length > 0 && deduped[deduped.length - 1].role === msg.role) {
+      deduped[deduped.length - 1] = msg; // 같은 role이면 덮어씀
+    } else {
+      deduped.push(msg);
+    }
+  }
+  // history가 model로 끝나면 마지막 model 제거 (lastMessage가 user여야 함)
+  if (deduped.length > 0 && deduped[deduped.length - 1].role === 'model') {
+    deduped.pop();
+  }
+
   const lastMessage = userMessages[userMessages.length - 1];
-  const chat = model.startChat({ history });
+  const chat = model.startChat({ history: deduped });
 
   let fullContent = '';
   const result = await chat.sendMessageStream(lastMessage?.content || '');

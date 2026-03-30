@@ -1,1 +1,5 @@
 node_modules/
+.env
+data/uploads/
+data/messages.json
+data/sessions.json

@@ -419,6 +419,206 @@
   #session-list::-webkit-scrollbar { width: 4px; }
   #session-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+  /* MODE TABS */
+  .mode-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .mode-tab {
+    padding: 6px 16px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .mode-tab.active {
+    background: var(--accent);
+    color: white;
+  }
+  .mode-tab:hover:not(.active) {
+    color: var(--text);
+  }
+
+  /* Utility */
+  .hidden { display: none !important; }
+
+  /* DEBATE UI */
+  .debate-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .debate-start-form {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 16px;
+  }
+  .debate-start-form h2 { font-size: 1.2rem; }
+  .debate-start-form p { color: var(--text-muted); font-size: 0.85rem; text-align: center; max-width: 400px; }
+  .debate-input-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .debate-input-row input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+  }
+  .debate-input-row input:focus { border-color: var(--accent); }
+  .debate-input-row select {
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.85rem;
+  }
+
+  #debate-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #debate-messages::-webkit-scrollbar { width: 6px; }
+  #debate-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .debate-round-header {
+    text-align: center;
+    padding: 8px 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    margin: 8px 0;
+  }
+
+  .debate-bot-msg {
+    display: flex;
+    gap: 12px;
+    animation: fadeIn 0.2s ease;
+    max-width: 800px;
+  }
+  .debate-bot-msg .message-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .debate-eval {
+    text-align: center;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: var(--accent)11;
+    border: 1px solid var(--accent)33;
+    border-radius: 8px;
+    margin: 4px auto;
+  }
+
+  .debate-conclusion {
+    background: var(--surface);
+    border: 2px solid #22c55e55;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .debate-conclusion h3 {
+    color: #22c55e;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+  .debate-conclusion .position {
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .debate-conclusion .position .pos-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .debate-status-bar {
+    padding: 10px 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .debate-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .debate-progress .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Debate sidebar items */
+  .debate-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .debate-item:hover { background: var(--surface2); color: var(--text); }
+  .debate-item.active { background: var(--accent); color: white; }
+  .debate-item .debate-topic { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .debate-item .debate-meta { font-size: 0.72rem; margin-top: 2px; opacity: 0.7; }
+
+  /* Bot status dots in debate */
+  .bot-status-row {
+    display: flex;
+    gap: 12px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+  .bot-status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   /* Memory badge */
   .memory-badge {
     display: flex;
@@ -543,6 +743,10 @@
       <h1>KDSys MultiAgent Lab</h1>
       <span class="badge">BETA</span>
     </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="switchMode('chat')">💬 채팅</button>
+      <button class="mode-tab" onclick="switchMode('debate')">⚔️ 토론</button>
+    </div>
     <div class="agents-bar" id="agents-bar"></div>
     <div class="header-actions">
       <div class="memory-badge" id="memory-badge" title="Memory API 상태">🧠 Memory: 확인 중...</div>
@@ -572,7 +776,7 @@
     </div>
 
     <!-- CHAT AREA -->
-    <div class="chat-area">
+    <div class="chat-area" id="chat-mode">
       <div id="messages">
         <div class="empty-state" id="empty-state">
           <div class="icon">💬</div>
@@ -582,8 +786,9 @@
       </div>
 
       <div class="input-area">
-        <div class="input-hint">
-          전체 대화: 그냥 입력 &nbsp;|&nbsp; 개별 호출: <code>@이지두</code> <code>@김주희</code> <code>@민이</code>
+        <div class="input-hint" style="display:flex;justify-content:space-between;align-items:center">
+          <span>전체 대화: 그냥 입력 &nbsp;|&nbsp; 개별 호출: <code>@이지두</code> <code>@김주희</code> <code>@민이</code></span>
+          <button class="icon-btn" style="font-size:0.75rem;padding:3px 8px" onclick="exportChat()">📥 저장</button>
         </div>
         <div class="input-row">
           <textarea id="chat-input" placeholder="주제를 던져보세요..." rows="1"></textarea>
@@ -591,6 +796,40 @@
         </div>
       </div>
     </div>
+    <!-- DEBATE AREA -->
+    <div class="debate-area hidden" id="debate-mode">
+      <div id="debate-view-start" class="debate-start-form">
+        <div style="font-size:2.5rem">⚔️</div>
+        <h2>자율 토론 시작</h2>
+        <p>주제를 입력하면 민이, 이지두, 김주희가 자율적으로 토론하고 결론을 도출합니다</p>
+        <div class="debate-input-row">
+          <input type="text" id="debate-topic" placeholder="토론 주제를 입력하세요..." />
+          <label class="icon-btn" style="cursor:pointer;display:flex;align-items:center;gap:4px" title="파일 첨부">
+            📎
+            <input type="file" id="debate-file" style="display:none" onchange="attachFile(this)" accept=".txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.yaml,.yml,.xml,.log,.pdf,.png,.jpg,.jpeg,.gif,.webp" />
+          </label>
+          <button class="btn" style="width:auto;margin:0;padding:12px 24px" onclick="startDebate()">토론 시작</button>
+        </div>
+        <div id="debate-attachments" style="width:100%;max-width:600px;font-size:0.8rem;color:var(--text-muted)"></div>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:-4px">합의에 도달하면 자동 종료됩니다 • 파일 첨부 시 내용을 분석하여 토론에 반영합니다</p>
+        <div id="debate-bot-status" class="bot-status-row" style="border:none;padding-top:16px"></div>
+        <div id="past-debates" style="width:100%;max-width:600px;margin-top:16px"></div>
+      </div>
+
+      <div id="debate-view-running" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div id="debate-messages"></div>
+        <div class="debate-status-bar" id="debate-status-bar">
+          <div class="debate-progress">
+            <div class="spinner"></div>
+            <span id="debate-progress-text">토론 준비 중...</span>
+          </div>
+          <button class="icon-btn" onclick="backToDebateStart()">← 목록</button>
+          <button class="icon-btn" onclick="exportDebate()">📥 저장</button>
+          <button class="icon-btn" onclick="cancelCurrentDebate()">토론 중단</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -702,6 +941,12 @@ function connectWS() {
 }
 
 function handleWsMessage(msg) {
+  // 토론 이벤트 라우팅
+  if (msg.type?.startsWith('debate_')) {
+    handleDebateWsMessage(msg);
+    return;
+  }
+
   switch (msg.type) {
     case 'auth_ok':
       if (currentSession) ws.send(JSON.stringify({ type: 'join', sessionId: currentSession }));
@@ -1002,6 +1247,353 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+// ─── Debate Functions ──────────────────────────────────────────────────────
+
+let currentMode = 'chat';
+let currentDebateId = null;
+let debateRunning = false;
+let debateAttachIds = []; // 첨부 파일 ID 목록
+
+function switchMode(mode) {
+  // 토론 진행 중 채팅 모드로 전환 시 경고
+  if (debateRunning && mode === 'chat') {
+    if (!confirm('토론이 진행 중입니다. 채팅 모드로 전환하시겠어요?\n(토론은 백그라운드에서 계속됩니다)')) return;
+  }
+
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.mode-tab[onclick*="${mode}"]`).classList.add('active');
+
+  const chatMode = document.getElementById('chat-mode');
+  const debateMode = document.getElementById('debate-mode');
+  const sidebar = document.getElementById('sidebar');
+
+  if (mode === 'chat') {
+    chatMode.classList.remove('hidden');
+    debateMode.classList.add('hidden');
+    sidebar.classList.remove('hidden');
+  } else {
+    chatMode.classList.add('hidden');
+    debateMode.classList.remove('hidden');
+    sidebar.classList.add('hidden');
+    checkDebateBots();
+    loadPastDebates();
+  }
+}
+
+async function attachFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const el = document.getElementById('debate-attachments');
+  el.innerHTML = `<span>📎 ${escapeHtml(file.name)} 분석 중...</span>`;
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('fileName', file.name); // 한글 파일명을 별도 필드로 전송
+
+  try {
+    const res = await fetch('/api/files/attach', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    debateAttachIds.push(data.attachId);
+    el.innerHTML = `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-top:4px">
+        <div>📎 <strong>${escapeHtml(data.fileName)}</strong>
+          <span style="opacity:0.5;font-size:0.75rem">(${(data.originalSize / 1024).toFixed(1)}KB)</span>
+          <button onclick="removeAttach(this,'${data.attachId}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;float:right">✕</button>
+        </div>
+        <div style="margin-top:4px;font-size:0.78rem;color:var(--text-muted);line-height:1.4">${escapeHtml(data.summary?.slice(0, 200) || '')}</div>
+      </div>
+    `;
+  } catch (e) {
+    el.innerHTML = `<span style="color:#ef4444">파일 분석 실패: ${escapeHtml(e.message)}</span>`;
+  }
+
+  input.value = ''; // 같은 파일 재선택 가능
+}
+
+function removeAttach(btn, attachId) {
+  debateAttachIds = debateAttachIds.filter(id => id !== attachId);
+  btn.closest('div[style*="background"]').remove();
+  const el = document.getElementById('debate-attachments');
+  if (el.children.length === 0) el.innerHTML = '';
+}
+
+async function checkDebateBots() {
+  const el = document.getElementById('debate-bot-status');
+  el.innerHTML = '<span style="color:var(--text-muted)">봇 상태 확인 중...</span>';
+  try {
+    const res = await fetch('/api/debate/status', { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    el.innerHTML = Object.values(data.bots).map(b => `
+      <div class="bot-status-item">
+        <div class="status-dot ${b.status === 'online' ? '' : 'offline'}"></div>
+        <span>${b.emoji} ${b.name}</span>
+      </div>
+    `).join('');
+  } catch (e) {
+    el.innerHTML = '<span style="color:var(--text-muted)">봇 상태 확인 실패</span>';
+  }
+}
+
+async function loadPastDebates() {
+  const el = document.getElementById('past-debates');
+  try {
+    const res = await fetch('/api/debates', { headers: { Authorization: `Bearer ${token}` } });
+    const debates = await res.json();
+    if (debates.length === 0) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = `
+      <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:8px">최근 토론</div>
+      ${debates.slice(0, 5).map(d => {
+        const time = new Date(d.startedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const statusIcon = d.status === 'completed' ? '✅' : d.status === 'running' ? '⏳' : '❌';
+        return `<div class="debate-item" onclick="viewDebate('${d.id}')">
+          <div class="debate-topic">${statusIcon} ${escapeHtml(d.topic)}</div>
+          <div class="debate-meta">${d.rounds}라운드 • ${time}</div>
+        </div>`;
+      }).join('')}
+    `;
+  } catch (e) {
+    el.innerHTML = '';
+  }
+}
+
+async function startDebate() {
+  const topicInput = document.getElementById('debate-topic');
+  const topic = topicInput.value.trim();
+  if (!topic) {
+    topicInput.style.borderColor = '#ef4444';
+    topicInput.placeholder = '주제를 입력해주세요!';
+    topicInput.focus();
+    setTimeout(() => { topicInput.style.borderColor = ''; topicInput.placeholder = '토론 주제를 입력하세요...'; }, 2000);
+    return;
+  }
+
+  // UI 전환
+  document.getElementById('debate-view-start').classList.add('hidden');
+  const runView = document.getElementById('debate-view-running');
+  runView.classList.remove('hidden');
+  document.getElementById('debate-messages').innerHTML = '';
+  document.getElementById('debate-progress-text').textContent = '토론 시작 중...';
+  document.querySelector('#debate-status-bar .spinner').classList.remove('hidden');
+  debateRunning = true;
+
+  // 주제 표시
+  appendDebateMsg('system', `📋 주제: "${escapeHtml(topic)}"`);
+
+  try {
+    const res = await fetch('/api/debate/start', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, attachIds: debateAttachIds })
+    });
+    const data = await res.json();
+    currentDebateId = data.debateId;
+    topicInput.value = '';
+    debateAttachIds = [];
+    document.getElementById('debate-attachments').innerHTML = '';
+  } catch (e) {
+    appendDebateMsg('error', `토론 시작 실패: ${e.message}`);
+    debateRunning = false;
+  }
+}
+
+async function cancelCurrentDebate() {
+  if (!currentDebateId) return;
+  try {
+    await fetch(`/api/debates/${currentDebateId}/cancel`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch (e) {}
+  debateRunning = false;
+  document.getElementById('debate-progress-text').textContent = '토론 중단됨';
+  document.querySelector('#debate-status-bar .spinner').classList.add('hidden');
+}
+
+async function viewDebate(debateId) {
+  try {
+    const res = await fetch(`/api/debates/${debateId}`, { headers: { Authorization: `Bearer ${token}` } });
+    const debate = await res.json();
+
+    currentDebateId = debateId;
+    document.getElementById('debate-view-start').classList.add('hidden');
+    const runView = document.getElementById('debate-view-running');
+    runView.classList.remove('hidden');
+    const msgs = document.getElementById('debate-messages');
+    msgs.innerHTML = '';
+    debateRunning = false;
+
+    appendDebateMsg('system', `📋 주제: "${escapeHtml(debate.topic)}"`);
+
+    for (const round of debate.rounds || []) {
+      appendDebateMsg('round', `Round ${round.number}`);
+      for (const resp of round.responses || []) {
+        if (resp.content) {
+          const role = { mini: '🦞', ezdoitbot: '💡', iriskdsys: '🌸' };
+          appendDebateMsg('bot', resp.content, resp.botName, role[resp.botId] || '🤖');
+        }
+      }
+      if (round.evaluation?.note) {
+        appendDebateMsg('eval', round.evaluation.note);
+      }
+    }
+
+    if (debate.conclusion) {
+      renderDebateConclusion(debate.conclusion);
+    }
+
+    // 상태바
+    const bar = document.getElementById('debate-status-bar');
+    const spinner = bar.querySelector('.spinner');
+    spinner.classList.add('hidden');
+    document.getElementById('debate-progress-text').textContent =
+      `${debate.status} • ${debate.rounds?.length || 0}라운드`;
+  } catch (e) {}
+}
+
+function appendDebateMsg(type, content, name, emoji) {
+  const msgs = document.getElementById('debate-messages');
+  const el = document.createElement('div');
+
+  if (type === 'system') {
+    el.style.cssText = 'text-align:center;color:var(--text-muted);font-size:0.85rem;padding:8px 0;font-weight:600';
+    el.textContent = content;
+  } else if (type === 'round') {
+    el.className = 'debate-round-header';
+    el.textContent = `──── ${content} ────`;
+  } else if (type === 'bot') {
+    el.className = 'debate-bot-msg';
+    el.innerHTML = `
+      <div class="avatar">${emoji}</div>
+      <div class="message-body">
+        <div class="message-meta"><span class="sender-name">${escapeHtml(name)}</span></div>
+        <div class="message-content">${escapeHtml(content)}</div>
+      </div>
+    `;
+  } else if (type === 'eval') {
+    el.className = 'debate-eval';
+    el.textContent = `📊 ${content}`;
+  } else if (type === 'error') {
+    el.style.cssText = 'text-align:center;color:#ef4444;font-size:0.85rem;padding:8px 0';
+    el.textContent = content;
+  }
+
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function renderDebateConclusion(conclusion) {
+  const msgs = document.getElementById('debate-messages');
+  const el = document.createElement('div');
+  el.className = 'debate-conclusion';
+
+  const isConsensus = conclusion.isConsensus;
+  const icon = isConsensus ? '🤝' : '📋';
+  const title = isConsensus ? '합의된 결론' : '최종 결론';
+  const borderColor = isConsensus ? '#22c55e' : '#6366f1';
+
+  el.style.borderColor = borderColor + '55';
+
+  el.innerHTML = `
+    <h3>${icon} ${title}</h3>
+    <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px">
+      ${conclusion.totalRounds}라운드 • ${conclusion.stopNote || ''}
+    </div>
+    <div style="font-size:0.92rem;line-height:1.7;white-space:pre-wrap">${escapeHtml(conclusion.unifiedConclusion || '')}</div>
+  `;
+
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// WebSocket 토론 이벤트 처리 (handleWsMessage에 추가)
+function handleDebateWsMessage(msg) {
+  if (currentMode !== 'debate') return;
+
+  switch (msg.type) {
+    case 'debate_round_start':
+      appendDebateMsg('round', `Round ${msg.roundNum}/${msg.maxRounds}`);
+      document.getElementById('debate-progress-text').textContent = `Round ${msg.roundNum}/${msg.maxRounds} 진행 중...`;
+      break;
+
+    case 'debate_bot_response':
+      appendDebateMsg('bot', msg.content, msg.botName, msg.emoji);
+      break;
+
+    case 'debate_round_end':
+      if (msg.evaluation?.note) {
+        appendDebateMsg('eval', msg.evaluation.note);
+      }
+      break;
+
+    case 'debate_complete':
+      debateRunning = false;
+      document.getElementById('debate-progress-text').textContent =
+        `토론 완료 (${msg.totalRounds}라운드, ${(msg.durationMs / 1000).toFixed(0)}초)`;
+      document.querySelector('#debate-status-bar .spinner').classList.add('hidden');
+      // 결론을 토론 쓰레드에 바로 표시
+      if (msg.conclusion) {
+        renderDebateConclusion(msg.conclusion);
+      } else if (currentDebateId) {
+        // 폴백: WS에 결론이 없으면 API에서 가져옴
+        setTimeout(async () => {
+          try {
+            const res = await fetch(`/api/debates/${currentDebateId}`, { headers: { Authorization: `Bearer ${token}` } });
+            const debate = await res.json();
+            if (debate.conclusion) renderDebateConclusion(debate.conclusion);
+          } catch (e) {}
+        }, 500);
+      }
+      break;
+
+    case 'debate_error':
+      if (msg.fatal) {
+        appendDebateMsg('error', `토론 실패: ${msg.error}`);
+        debateRunning = false;
+        document.querySelector('#debate-status-bar .spinner').classList.add('hidden');
+      } else {
+        appendDebateMsg('error', `⚠️ ${msg.botId}: ${msg.error}`);
+      }
+      break;
+  }
+}
+
+function exportDebate() {
+  if (!currentDebateId) { alert('저장할 토론이 없습니다'); return; }
+  const a = document.createElement('a');
+  a.href = '/api/debates/' + currentDebateId + '/export?token=' + encodeURIComponent(token);
+  a.download = 'debate.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function exportChat() {
+  if (!currentSession) { alert('저장할 대화가 없습니다'); return; }
+  const a = document.createElement('a');
+  a.href = '/api/sessions/' + currentSession + '/export?token=' + encodeURIComponent(token);
+  a.download = 'chat.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function backToDebateStart() {
+  document.getElementById('debate-view-start').classList.remove('hidden');
+  document.getElementById('debate-view-running').classList.add('hidden');
+  loadPastDebates();
+}
+
 // ─── Memory Functions ───────────────────────────────────────────────────────
 
 async function checkMemoryHealth() {
@@ -1046,7 +1638,7 @@ async function loadMemories() {
     }
     list.innerHTML = memories.map(m => {
       const date = m.created_at
-        ? new Date(m.created_at).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        ? new Date(m.created_at * 1000).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         : '';
       const tags = (m.tags || []).filter(t => t !== 'conversation').slice(0, 3).join(', ');
       return `

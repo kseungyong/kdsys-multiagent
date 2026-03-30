@@ -40,13 +40,21 @@ function getClient(agentId) {
 async function fetchMemoryContext(agentId, query) {
   try {
     const client = getClient(agentId);
-    const memories = await client.read({ scope: 'shared', limit: 5 });
-    if (!memories || memories.length === 0) return null;
+    const results = [];
 
-    const lines = memories.map(m => `- ${m.content}`).join('\n');
-    return `## 공유 메모리 (최근 컨텍스트)\n${lines}`;
+    // shared 메모리: 최근 대화 + 요약 (최대 8개)
+    const shared = await client.read({ scope: 'shared', limit: 8 });
+    if (shared && shared.length > 0) {
+      results.push('## 최근 공유 컨텍스트 (다른 채널 포함)');
+      shared.forEach(m => {
+        // 내용 자체만 넣음 (prefix 없이)
+        results.push(`- ${m.content.slice(0, 150)}`);
+      });
+    }
+
+    if (results.length === 0) return null;
+    return results.join('\n');
   } catch (e) {
-    // 실패해도 채팅 계속
     return null;
   }
 }
