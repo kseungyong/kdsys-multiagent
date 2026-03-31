@@ -23,7 +23,8 @@ try {
 }
 const { saveConclusion, buildPriorContext, saveInsight } = require('./shared-memory');
 
-const DEBATES_FILE = path.join(__dirname, 'data', 'debates.json');
+const config = require('./config');
+const DEBATES_FILE = config.paths.debates;
 
 const DEBATE_STATUS = {
   PENDING: 'pending',
@@ -89,6 +90,11 @@ class DebateEngine {
       maxRounds,
       rounds: [],
       conclusion: null,
+      metrics: {
+        priorContextInjected: false,
+        priorContextLength: 0,
+        priorConclusionsCount: 0,
+      },
       startedAt: Date.now(),
       completedAt: null,
     };
@@ -100,7 +106,11 @@ class DebateEngine {
       try {
         priorContext = buildPriorContext(topic);
         if (priorContext) {
-          console.log(`[debate] 관련 과거 결론 ${priorContext.split('\n주제:').length - 1}개 발견`);
+          const count = priorContext.split('\n주제:').length - 1;
+          debate.metrics.priorContextInjected = true;
+          debate.metrics.priorContextLength = priorContext.length;
+          debate.metrics.priorConclusionsCount = count;
+          console.log(`[debate] 관련 과거 결론 ${count}개 주입 (${priorContext.length}자)`);
         }
       } catch (e) {
         // 메모리 검색 실패해도 토론 계속
@@ -429,6 +439,7 @@ class DebateEngine {
         summaries: r.summaries,
         evaluation: r.evaluation?.note,
       })),
+      metrics: debate.metrics,
       timestamp: new Date().toISOString(),
     };
   }

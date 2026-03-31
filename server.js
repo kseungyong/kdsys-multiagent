@@ -20,7 +20,8 @@ const telegram = require('./telegram-sync');
 const { syncConclusion } = require('./memory-sync');
 
 // 파일 업로드 설정
-const uploadDir = path.join(__dirname, 'data', 'uploads');
+const config = require('./config');
+const uploadDir = config.paths.uploads;
 if (!require('fs').existsSync(uploadDir)) require('fs').mkdirSync(uploadDir, { recursive: true });
 const upload = multer({
   dest: uploadDir,
@@ -258,6 +259,106 @@ app.get('/api/sessions/:id/export', authMiddleware, (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
   res.send(html);
+});
+
+// === 시스템 헬스체크 ===
+
+app.get('/api/health', async (req, res) => {
+  const fs = require('fs');
+  const checks = {};
+
+  // 1. 데이터 파일 상태
+  checks.data = {};
+  for (const [name, filepath] of Object.entries(config.paths)) {
+    if (name === 'uploads') continue;
+    try {
+      const stat = fs.statSync(filepath);
+      checks.data[name] = { exists: true, size: stat.size, modified: stat.mtime };
+    } catch (e) {
+      checks.data[name] = { exists: false };
+    }
+  }
+
+  // 2. 봇 연결 상태
+  try {
+    const health = await bridge.checkAll();
+    checks.bots = {
+      online: health.connected,
+      offline: health.failed.map(f => f.botId),
+      total: health.connected.length + health.failed.length,
+    };
+  } catch (e) {
+    checks.bots = { error: e.message };
+  }
+
+  // 3. 토론 엔진 상태
+  const debates = debateEngine.listDebates({ limit: 100 });
+  checks.debates = {
+    total: debates.length,
+    completed: debates.filter(d => d.status === 'completed').length,
+    running: debates.filter(d => d.status === 'running').length,
+  };
+
+  // 4. 집단 기억 상태
+  const conclusions = sharedMemory.getAllConclusions({ limit: 999 });
+  checks.memory = {
+    conclusions: conclusions.length,
+    latestTopic: conclusions[0]?.topic || null,
+    latestDate: conclusions[0]?.timestamp || null,
+  };
+
+  // 5. mini MEMORY.md 동기화 상태
+  try {
+    const mem = fs.readFileSync(config.paths.miniMemory, 'utf8');
+    checks.miniMemory = {
+      exists: true,
+      hasConclusionSection: mem.includes('토론 결론 (자동 동기화)'),
+      size: mem.length,
+    };
+  } catch (e) {
+    checks.miniMemory = { exists: false };
+  }
+
+  // 6. 컨텍스트 주입 효과 정량 분석
+  const allDebates = debateEngine.listDebates({ limit: 100 });
+  const completedDebates = [];
+  for (const d of allDebates) {
+    const full = debateEngine.getDebate(d.id);
+    if (full?.status === 'completed' && full.conclusion) completedDebates.push(full);
+  }
+
+  const withContext = completedDebates.filter(d => d.metrics?.priorContextInjected);
+  const withoutContext = completedDebates.filter(d => !d.metrics?.priorContextInjected);
+
+  const avgRounds = arr => arr.length ? (arr.reduce((s, d) => s + d.rounds.length, 0) / arr.length).toFixed(1) : '-';
+  const consensusRate = arr => arr.length ? ((arr.filter(d => d.conclusion?.isConsensus).length / arr.length) * 100).toFixed(0) + '%' : '-';
+
+  checks.contextEffect = {
+    totalCompleted: completedDebates.length,
+    withPriorContext: {
+      count: withContext.length,
+      avgRounds: avgRounds(withContext),
+      consensusRate: consensusRate(withContext),
+    },
+    withoutPriorContext: {
+      count: withoutContext.length,
+      avgRounds: avgRounds(withoutContext),
+      consensusRate: consensusRate(withoutContext),
+    },
+    verdict: withContext.length >= 3 && withoutContext.length >= 3
+      ? '충분한 데이터 — 비교 가능'
+      : `데이터 부족 (주입 ${withContext.length}건, 미주입 ${withoutContext.length}건) — 토론 누적 필요`,
+  };
+
+  // 종합 판정
+  const botsOk = checks.bots.online?.length >= 2;
+  const dataOk = checks.data.conclusions?.exists && checks.data.debates?.exists;
+  const memoryOk = checks.memory.conclusions > 0;
+
+  checks.status = (botsOk && dataOk && memoryOk) ? 'healthy' : 'degraded';
+  checks.timestamp = new Date().toISOString();
+
+  res.json(checks);
 });
 
 // === 파일 업로드 API ===

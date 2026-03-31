@@ -2,11 +2,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_DIR = path.join(__dirname, 'data');
+const config = require('./config');
+const DATA_DIR = config.DATA_PATH;
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
-const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
+const SESSIONS_FILE = config.paths.sessions;
+const MESSAGES_FILE = config.paths.messages;
 
 function loadJson(file, def) {
   try {

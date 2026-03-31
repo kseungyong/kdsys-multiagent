@@ -10,10 +10,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
-const DATA_DIR = path.join(__dirname, 'data');
-const CONCLUSIONS_FILE = path.join(DATA_DIR, 'conclusions.json');
-const INSIGHTS_FILE = path.join(DATA_DIR, 'insights.json');
+const DATA_DIR = config.DATA_PATH;
+const CONCLUSIONS_FILE = config.paths.conclusions;
+const INSIGHTS_FILE = config.paths.insights;
 
 // --- 파일 I/O ---
 
@@ -69,8 +70,8 @@ function saveConclusion(debate) {
   }
 
   // 최대 200개 유지 (오래된 것 삭제)
-  if (conclusions.length > 200) {
-    conclusions.splice(0, conclusions.length - 200);
+  if (conclusions.length > config.limits.maxConclusions) {
+    conclusions.splice(0, conclusions.length - config.limits.maxConclusions);
   }
 
   saveJson(CONCLUSIONS_FILE, conclusions);
@@ -142,8 +143,8 @@ function saveInsight({ content, source, tags = [] }) {
   insights.push(entry);
 
   // 최대 500개
-  if (insights.length > 500) {
-    insights.splice(0, insights.length - 500);
+  if (insights.length > config.limits.maxInsights) {
+    insights.splice(0, insights.length - config.limits.maxInsights);
   }
 
   saveJson(INSIGHTS_FILE, insights);
