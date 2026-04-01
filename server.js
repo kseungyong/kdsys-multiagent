@@ -18,6 +18,10 @@ const sharedMemory = require('./shared-memory');
 const { analyzeFile, SUPPORTED_TYPES } = require('./file-analyzer');
 const telegram = require('./telegram-sync');
 const { syncConclusion } = require('./memory-sync');
+const { runPreflight, getKeyStatus, isCacheExpired } = require('./preflight');
+
+// Graceful shutdown flag
+let isShuttingDown = false;
 
 // 파일 업로드 설정
 const config = require('./config');
@@ -263,7 +267,17 @@ app.get('/api/sessions/:id/export', authMiddleware, (req, res) => {
 
 // === 시스템 헬스체크 ===
 
-app.get('/api/health', async (req, res) => {
+// 공개 health (LB/모니터링용)
+app.get('/api/health', (req, res) => {
+  if (isShuttingDown) {
+    return res.status(503).json({ status: 'shutting_down', uptime: process.uptime() });
+  }
+  res.json({ status: 'ok', uptime: Math.floor(process.uptime()) });
+});
+
+// 상세 health (JWT 인증 필요)
+app.get('/api/health/detail', authMiddleware, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const fs = require('fs');
   const checks = {};
 
@@ -350,6 +364,9 @@ app.get('/api/health', async (req, res) => {
       : `데이터 부족 (주입 ${withContext.length}건, 미주입 ${withoutContext.length}건) — 토론 누적 필요`,
   };
 
+  // 7. API 키 상태
+  checks.apiKeys = getKeyStatus();
+
   // 종합 판정
   const botsOk = checks.bots.online?.length >= 2;
   const dataOk = checks.data.conclusions?.exists && checks.data.debates?.exists;
@@ -357,8 +374,34 @@ app.get('/api/health', async (req, res) => {
 
   checks.status = (botsOk && dataOk && memoryOk) ? 'healthy' : 'degraded';
   checks.timestamp = new Date().toISOString();
+  checks.uptime = Math.floor(process.uptime());
 
   res.json(checks);
+});
+
+// API 키 재검증 (JWT + rate-limit)
+const recheckLimiter = new Map();
+const RECHECK_LIMIT = { max: 3, windowMs: 60000 };
+
+app.post('/api/health/recheck-keys', authMiddleware, async (req, res) => {
+  const ip = req.ip;
+  const now = Date.now();
+  const entry = recheckLimiter.get(ip) || { count: 0, resetAt: now + RECHECK_LIMIT.windowMs };
+
+  if (now > entry.resetAt) {
+    entry.count = 0;
+    entry.resetAt = now + RECHECK_LIMIT.windowMs;
+  }
+
+  if (entry.count >= RECHECK_LIMIT.max) {
+    return res.status(429).json({ error: 'Too many requests. Try again later.' });
+  }
+
+  entry.count++;
+  recheckLimiter.set(ip, entry);
+
+  const result = await runPreflight();
+  res.json(result);
 });
 
 // === 파일 업로드 API ===
@@ -765,8 +808,48 @@ wss.on('connection', (ws) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   console.log(`🦞 KDSys MultiAgent Lab running on port ${PORT}`);
   console.log(`   Local:      http://localhost:${PORT}`);
   console.log(`   Network:    http://192.168.100.22:${PORT}`);
+
+  // Preflight: API 키 검증 (non-blocking)
+  try {
+    await runPreflight();
+  } catch (e) {
+    console.warn('[preflight] 검증 실패 (서버는 정상 운영):', e.message);
+  }
 });
+
+// Graceful Shutdown
+function gracefulShutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`[server] ${signal} received. Graceful shutdown...`);
+
+  // 1. WebSocket 연결 종료
+  wss.close(() => console.log('[server] WebSocket closed'));
+
+  // 2. 진행 중 토론 저장
+  try {
+    debateEngine.saveAll?.();
+    console.log('[server] Debate state saved');
+  } catch (e) {
+    console.warn('[server] Debate save failed:', e.message);
+  }
+
+  // 3. HTTP 서버 종료
+  server.close(() => {
+    console.log('[server] HTTP server closed');
+    process.exit(0);
+  });
+
+  // 10초 타임아웃
+  setTimeout(() => {
+    console.warn('[server] Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

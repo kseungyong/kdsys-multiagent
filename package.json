@@ -5,7 +5,15 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "pm2": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop kdsys-multiagent",
+    "pm2:restart": "pm2 restart kdsys-multiagent",
+    "pm2:logs": "pm2 logs kdsys-multiagent",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "RUN_INTEGRATION=true jest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
@@ -18,5 +26,8 @@
     "openai": "^6.33.0",
     "pdf-parse-new": "^2.0.0",
     "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0"
   }
 }
