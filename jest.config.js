@@ -14,6 +14,6 @@ module.exports = {
     'preflight.js',
   ],
   coverageThreshold: {
-    global: { lines: 50 },
+    global: { lines: 55 },
   },
 };

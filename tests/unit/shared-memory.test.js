@@ -98,6 +98,50 @@ describe('shared-memory', () => {
     });
   });
 
+  describe('deleteConclusion', () => {
+    test('존재하는 결론 삭제', () => {
+      sharedMemory.saveConclusion({
+        id: 'del-1', topic: '삭제 테스트', rounds: [],
+        conclusion: { stopReason: 'test', stopNote: 'test', finalPositions: {} },
+      });
+      expect(sharedMemory.getAllConclusions().length).toBe(1);
+      const deleted = sharedMemory.deleteConclusion('del-1');
+      expect(deleted).toBe(true);
+      expect(sharedMemory.getAllConclusions().length).toBe(0);
+    });
+
+    test('없는 ID 삭제 → false', () => {
+      expect(sharedMemory.deleteConclusion('nonexistent')).toBe(false);
+    });
+  });
+
+  describe('saveInsight / searchInsights', () => {
+    test('인사이트 저장 후 검색', () => {
+      sharedMemory.saveInsight({
+        content: 'AI 토론에서 요약 레이어가 토큰을 80% 절감한다',
+        source: 'test-debate',
+        tags: ['token', 'optimization'],
+      });
+      // "요약"이 content 키워드에 포함됨
+      const results = sharedMemory.searchInsights('요약 80');
+      expect(results.length).toBe(1);
+      expect(results[0].content).toContain('80%');
+    });
+
+    test('빈 검색어 → 최신순 반환', () => {
+      sharedMemory.saveInsight({ content: '인사이트 1', source: 'test' });
+      sharedMemory.saveInsight({ content: '인사이트 2', source: 'test' });
+      const results = sharedMemory.searchInsights('');
+      expect(results.length).toBe(2);
+    });
+
+    test('관련 없는 검색어 → 빈 결과', () => {
+      sharedMemory.saveInsight({ content: 'AI 관련 내용', source: 'test' });
+      const results = sharedMemory.searchInsights('블록체인 NFT');
+      expect(results.length).toBe(0);
+    });
+  });
+
   describe('buildPriorContext', () => {
     test('관련 결론 없으면 빈 문자열', () => {
       expect(sharedMemory.buildPriorContext('랜덤 주제')).toBe('');

@@ -1,6 +1,6 @@
 'use strict';
 
-const { extractSummary } = require('../../summarizer');
+const { extractSummary, summarize } = require('../../summarizer');
 
 describe('extractSummary', () => {
   test('짧은 텍스트는 그대로 반환', () => {
@@ -50,5 +50,56 @@ describe('extractSummary', () => {
     const result = extractSummary(text, 100);
     expect(result.length).toBeLessThanOrEqual(103); // 100 + '...'
     expect(result).toMatch(/\.\.\.$/);
+  });
+
+  test('첫줄과 마지막줄이 같으면 하나만 반환', () => {
+    const line = 'A'.repeat(100);
+    // 4줄 반복 → 총 길이 > 300 → extractSummary 진입 → first===last → 한 줄만
+    const text = [line, line, line, line].join('\n');
+    const result = extractSummary(text, 300);
+    expect(result).not.toContain('\n');
+  });
+
+  test('첫+끝 경로에서도 maxLen 적용', () => {
+    const text = 'A'.repeat(200) + '\n중간\n' + 'B'.repeat(200);
+    const result = extractSummary(text, 100);
+    expect(result.length).toBeLessThanOrEqual(103);
+  });
+});
+
+describe('summarize', () => {
+  test('빈 텍스트 → 빈 문자열', async () => {
+    expect(await summarize('')).toBe('');
+    expect(await summarize(null)).toBe('');
+  });
+
+  test('짧은 텍스트 → 그대로 반환', async () => {
+    const result = await summarize('짧은 텍스트', { mode: 'extract' });
+    expect(result).toBe('짧은 텍스트');
+  });
+
+  test('extract 모드: extractSummary 사용', async () => {
+    const long = '결론: AI가 효과적이다.\n' + 'A'.repeat(500);
+    const result = await summarize(long, { mode: 'extract', maxLen: 300 });
+    expect(result).toContain('결론');
+  });
+
+  test('claude 모드: API 없으면 폴백', async () => {
+    const long = '서론.\n' + 'A'.repeat(500);
+    // Anthropic API가 테스트에서는 미설정 → 폴백
+    const result = await summarize(long, { mode: 'claude', maxLen: 300 });
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  test('auto 모드: 짧은 텍스트는 extract', async () => {
+    const text = '결론: 이것은 자동 모드 테스트.\n' + 'A'.repeat(400);
+    const result = await summarize(text, { mode: 'auto', maxLen: 300 });
+    expect(result).toContain('결론');
+  });
+
+  test('알 수 없는 모드 → extract 폴백', async () => {
+    const text = '결론: 폴백 테스트.\n' + 'A'.repeat(400);
+    const result = await summarize(text, { mode: 'unknown', maxLen: 300 });
+    expect(result).toContain('결론');
   });
 });

@@ -118,5 +118,56 @@ describe('DebateEngine', () => {
       expect(result.shouldStop).toBe(true);
       expect(result.reason).toBe('no_responses');
     });
+
+    test('수렴 감지: 이전 라운드와 유사도 > 0.8', () => {
+      const sameSummary = '같은 내용 반복 동일한 의견';
+      const debate = {
+        rounds: [
+          { responses: [{ content: 'a' }], summaries: [sameSummary] },
+          { responses: [{ content: 'b' }], summaries: [sameSummary] },
+        ],
+        maxRounds: 10,
+      };
+      const round = {
+        responses: [{ botId: 'mini', content: '의견' }],
+        summaries: [sameSummary],
+      };
+      const result = engine._evaluateRound(debate, round);
+      expect(result.shouldStop).toBe(true);
+      expect(result.reason).toBe('convergence');
+    });
+
+    test('종합하면 키워드도 합의 감지', () => {
+      const debate = { rounds: [{ responses: [] }], maxRounds: 10 };
+      const round = {
+        responses: [
+          { botId: 'mini', content: '종합하면 이런 결론이 됩니다.' },
+          { botId: 'ezdo', content: '정리하면 같은 방향입니다.' },
+        ],
+        summaries: ['a', 'b'],
+      };
+      const result = engine._evaluateRound(debate, round);
+      expect(result.shouldStop).toBe(true);
+      expect(result.reason).toBe('consensus');
+    });
+  });
+
+  describe('인스턴스 생성', () => {
+    test('bridge 없이 생성 가능', () => {
+      const engine = new DebateEngine({});
+      expect(engine).toBeDefined();
+    });
+
+    test('listDebates 빈 상태에서 동작', () => {
+      const engine = new DebateEngine({});
+      const list = engine.listDebates();
+      expect(Array.isArray(list)).toBe(true);
+    });
+
+    test('getDebate 없는 ID → null/undefined', () => {
+      const engine = new DebateEngine({});
+      const result = engine.getDebate('nonexistent-id');
+      expect(result).toBeFalsy();
+    });
   });
 });
